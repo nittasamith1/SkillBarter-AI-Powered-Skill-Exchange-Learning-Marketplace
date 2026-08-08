@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-surface-50 text-slateText-900 font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-slateText-900 font-semibold tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-teal-500 text-white;
+  }
+}
+
+@layer components {
+  /* Light-mode scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F1F5F9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
+  /* Sidebar dark scrollbar override */
+  aside ::-webkit-scrollbar-track {
+    background: #0B1220;
+  }
+  aside ::-webkit-scrollbar-thumb {
+    background: #1E293B;
+  }
+  aside ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}

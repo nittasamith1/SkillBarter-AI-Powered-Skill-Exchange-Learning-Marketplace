@@ -1,0 +1,62 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: skillbarter-mysql
+    environment:
+      MYSQL_DATABASE: skillbarter_dev
+      MYSQL_USER: skillbarter
+      MYSQL_PASSWORD: ${DB_PASSWORD:-changeme_dev_only}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_changeme_dev}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u skillbarter --password=$${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skillbarter-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skillbarter-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DATABASE_URL: jdbc:mysql://mysql:3306/skillbarter_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      DATABASE_USERNAME: skillbarter
+      DATABASE_PASSWORD: ${DB_PASSWORD:-changeme_dev_only}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - skillbarter-net
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: skillbarter-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - skillbarter-net
+
+volumes:
+  mysql_data:
+
+networks:
+  skillbarter-net:
+    driver: bridge
