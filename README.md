@@ -1,97 +1,151 @@
-# SkillBarter AI — Phase 1: Foundation + Identity + Multi-Tenancy
+# SkillBarter AI — AI-Powered Skill Exchange & Learning Marketplace
 
-> AI-Powered Skill Exchange & Learning Marketplace
-
----
-
-## Project Overview
-
-SkillBarter AI is a multi-tenant, AI-ready skill exchange platform that allows students and professionals within institutions to trade skills peer-to-peer.
-
-**Phase 1** establishes the foundation:
-- Secure multi-tenant identity with JWT stateless authentication
-- Refresh token rotation and reuse detection
-- Role-based access control (SUPER_ADMIN, TENANT_ADMIN, STUDENT)
-- Tenant-scoped data isolation enforced at the service layer
-- Audit logging for all security events
-- In-memory rate limiting for brute-force protection
-- Clean SaaS frontend with institution-scoped profiles
+> Connect with institutional peers for peer-to-peer skill exchanges powered by multi-tenant security, skill matching, and AI learning roadmaps.
 
 ---
 
-## Architecture: Modular Monolith
+## 🌟 Project Overview
 
-```
+**SkillBarter AI** is a multi-tenant, AI-ready skill exchange platform where students and professionals within institutions trade skills peer-to-peer (e.g. *"I will teach you Java OOP in exchange for learning System Design or React"*).
+
+The platform is designed as a **Modular Monolith** with clean domain boundary separation, stateless JWT security, strict institutional multi-tenancy, and a modern **Clean Light SaaS UI** (Linear × Notion × fintech aesthetic).
+
+---
+
+## 🚀 Key Features
+
+### 🟢 Phase 1 — Foundation & Security Infrastructure
+- **Multi-Tenant Isolation:** Tenant identity derived strictly from JWT authentication context (`TenantContext` ThreadLocal). Cross-tenant data leakage is impossible by design.
+- **Stateless JWT & Token Rotation:** Short-lived access tokens (15 min) + long-lived refresh tokens (7 days) with rotation and automatic reuse detection/revocation.
+- **RBAC Security:** Roles (`SUPER_ADMIN`, `TENANT_ADMIN`, `STUDENT`) with Spring Security authorization rules.
+- **Audit Logging:** System security logs for login events, token reuse detection, and sensitive actions.
+- **Rate Limiting:** Sliding-window rate limiting on login/registration endpoints.
+
+### 🟢 Phase 2 — Skill Ecosystem & Core Marketplace
+- **Skill Taxonomy & Catalog:** Hierarchical skill categories (`Programming`, `Design`, `DevOps`, etc.), skills, and skill prerequisites.
+- **User Skill Profiles:** Users specify skills they **Can Teach** (with proficiency level and years of experience) and skills they **Want to Learn**.
+- **Learning Goals:** Define target skills, current level, desired target level (`BEGINNER`, `INTERMEDIATE`, `ADVANCED`, `EXPERT`), completion deadlines, and learning preferences.
+- **Marketplace & Peer Discovery:**
+  - Search skills by name or category filter.
+  - **Inline Peer Discovery:** Discover all qualified peers in your institution who teach a selected skill.
+  - **Skill Exchange Requests:** Propose exchange requests specifying *"Skill I Offer"* vs *"Skill I Want"* with custom messages.
+  - **Request Lifecycle Management:** Pending exchange request alerts on the dashboard with instant **Accept** / **Decline** actions.
+- **Skill Match Recommendation Engine:** Matches peers whose offered teachable skills align with your declared learning targets and goals.
+
+---
+
+## 🎨 Design System
+
+Built with a **Clean Light SaaS** direction (*"Human + Technology + Trust"*):
+
+| Token | Hex Code | Purpose |
+|---|---|---|
+| **Primary Navy** | `#0B1220` | Sidebar background, hero left panels, primary text headings |
+| **Primary Teal** | `#14B8A6` | Primary action buttons, active navigation indicator, key icons |
+| **Growth Mint** | `#5EEAD4` | Mint badges, hover highlights, progress elements |
+| **AI Accent** | `#3B82F6` | AI match recommendation card accents (`#14B8A6` → `#3B82F6`) |
+| **App Canvas** | `#F8FAFC` | Main content canvas area |
+| **Card Surface** | `#FFFFFF` | All content cards, modals, and input fields |
+| **Border Color** | `#E2E8F0` | Subtle clean card borders (no heavy drop shadows) |
+| **Primary Text** | `#0F172A` | Card titles, user names, main text hierarchy |
+| **Secondary Text** | `#64748B` | Subtitles, helper text, category labels |
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Framework:** Spring Boot 3.4 (Java 21)
+- **Security:** Spring Security, JJWT (SHA-512), BCrypt (cost 12)
+- **Database:** MySQL 8.0+ + Flyway schema migrations
+- **ORM:** Spring Data JPA / Hibernate (`CHAR(36)` UUID mapping via `@JdbcTypeCode`)
+- **API Docs:** SpringDoc OpenAPI 3 (Swagger UI)
+
+### Frontend
+- **Framework:** React 18, TypeScript, Vite
+- **Styling:** Tailwind CSS 3 (Vanilla CSS utility extensions)
+- **Icons:** Lucide React
+- **HTTP Client:** Axios with request/response interceptors + automatic JWT refresh rotation
+
+---
+
+## 📂 Project Architecture
+
+```text
 skillbarter-ai/
-├── backend/          # Spring Boot 3.4 (Java 21)
-│   └── src/main/java/com/skillbarter/
-│       ├── common/   # Security, exceptions, config, responses
-│       ├── tenant/   # Multi-tenancy: entity, repo, service, controller
-│       ├── identity/ # Auth: JWT, refresh tokens, login, register
-│       └── user/     # User profiles, audit logs, roles
-├── frontend/         # React 18 + TypeScript + Vite + Tailwind CSS
+├── backend/
+│   ├── src/main/java/com/skillbarter/
+│   │   ├── common/         # Security (JWT, TenantContext), exceptions, config, CORS
+│   │   ├── tenant/         # Institution tenant entity & services
+│   │   ├── identity/       # Auth: Login, Register, Refresh Token Rotation
+│   │   ├── user/           # User profile management & security audit logging
+│   │   ├── skill/          # Skill taxonomy, categories, user skills, learning goals
+│   │   └── marketplace/    # Exchange requests & peer match recommendation engine
+│   └── src/main/resources/
+│       └── db/migration/   # Flyway V1 (Identity) & V2 (Skill Ecosystem) migrations
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # UI primitives (Button, Card, Input, Badge), Layout (Navbar, Sidebar)
+│   │   ├── features/       # Feature pages: auth, dashboard, skills, goals, marketplace, profile
+│   │   ├── lib/            # Auth context provider & API client helper functions
+│   │   └── types/          # TypeScript interface definitions
+│   └── index.html
 └── docker-compose.yml
 ```
 
 ---
 
-## Technology Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | Spring Boot 3.4, Java 21 |
-| Security | Spring Security, JJWT (SHA-512), BCrypt (cost 12) |
-| Database | MySQL 8.0+ + Flyway migrations |
-| ORM | Spring Data JPA / Hibernate |
-| Docs | SpringDoc OpenAPI 3 (Swagger UI) |
-| Frontend | React 18, TypeScript, Vite |
-| Styling | Tailwind CSS 3 |
-| State | TanStack Query + React Context |
-| HTTP | Axios with interceptors + refresh token rotation |
-| Tests | JUnit 5, Mockito, H2 (backend) · Vitest + RTL (frontend) |
-| Container | Docker + Docker Compose |
-
----
-
-## Quick Start
+## 🚦 Quick Start Guide
 
 ### Prerequisites
-- Java 21+
-- Node 18+
-- MySQL 8.0+ (or Docker)
-- Maven Wrapper (`mvnw`) — included
+- **Java 21** or higher
+- **Node.js 18** or higher
+- **MySQL 8.0** or Docker
 
-### 1. Configure Environment
+### 1. Environment Setup
+
+Copy `.env.example` to `.env` in the root directory:
 
 ```bash
 cp .env.example .env
-# Edit .env and fill in required values:
-#   JWT_SECRET=<at-least-64-character-random-string>
-#   DATABASE_PASSWORD=<your-mysql-password>
 ```
 
-### 2. Start Backend
+Ensure your `.env` contains:
+```env
+JWT_SECRET=your_super_secret_jwt_key_that_is_at_least_64_characters_long_for_security
+DATABASE_URL=jdbc:mysql://localhost:3306/skillbarter?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DATABASE_USERNAME=skillbarter
+DATABASE_PASSWORD=changeme
+```
+
+### 2. Run Database (Docker option)
 
 ```bash
-cd backend
-
-# With Docker for MySQL only:
 docker run -d --name skillbarter-db \
   -e MYSQL_DATABASE=skillbarter \
   -e MYSQL_USER=skillbarter \
   -e MYSQL_PASSWORD=changeme \
   -e MYSQL_ROOT_PASSWORD=root_changeme \
   -p 3306:3306 mysql:8.0
-
-# Run application
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Backend starts at: `http://localhost:8080`
-Swagger UI: `http://localhost:8080/swagger-ui.html`
-Health: `http://localhost:8080/api/v1/health`
+### 3. Start Backend (Spring Boot)
 
-### 3. Start Frontend
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+*or on Windows PowerShell:*
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+- **API Base:** `http://localhost:8080/api/v1`
+- **Swagger UI Docs:** `http://localhost:8080/swagger-ui.html`
+- **Health Check:** `http://localhost:8080/api/v1/health`
+
+### 4. Start Frontend (React + Vite)
 
 ```bash
 cd frontend
@@ -99,146 +153,71 @@ npm install
 npm run dev
 ```
 
-Frontend starts at: `http://localhost:5173`
-
-### 4. Docker Compose (Full Stack)
-
-```bash
-# Requires Docker Desktop
-cp .env.example .env   # Fill in JWT_SECRET and DB_PASSWORD
-docker compose up -d
-```
+- **Frontend Application:** `http://localhost:5173`
 
 ---
 
-## Database Migrations (Flyway)
+## 🗄️ Database Schema Migrations (Flyway)
 
-| Migration | Description |
+| Migration File | Description |
 |---|---|
-| `V1__initial_schema.sql` | Creates: tenants, users, roles, user_roles, refresh_tokens, audit_logs |
-
-All future schema changes must be new numbered migration files. **Never edit existing migrations.**
-
----
-
-## API Endpoints (Phase 1)
-
-### Public
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/v1/health` | Health check + DB connectivity |
-| `POST` | `/api/v1/auth/register` | Register new user under a tenant slug |
-| `POST` | `/api/v1/auth/login` | Authenticate, receive access + refresh tokens |
-| `POST` | `/api/v1/auth/refresh` | Rotate refresh token, receive new tokens |
-| `POST` | `/api/v1/auth/logout` | Revoke refresh token |
-
-### Protected (Bearer JWT required)
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/v1/users/me` | Get current user profile |
-| `PUT` | `/api/v1/users/me` | Update current user profile |
-| `GET` | `/api/v1/tenants/me` | Get current tenant |
-| `GET` | `/api/v1/tenants/{id}` | Get tenant by ID (TENANT_ADMIN+) |
-| `POST` | `/api/v1/tenants` | Create tenant (SUPER_ADMIN only) |
+| `V1__initial_schema.sql` | Core identity: `tenants`, `users`, `roles`, `user_roles`, `refresh_tokens`, `audit_logs` |
+| `V2__skill_ecosystem.sql` | Marketplace ecosystem: `skill_categories`, `skills`, `skill_prerequisites`, `user_skills`, `learning_goals`, `exchange_requests` |
 
 ---
 
-## Security Architecture
+## 🔗 Key REST API Endpoints
 
-### Multi-Tenancy Isolation
+### Auth & Multi-Tenancy
+- `POST /api/v1/auth/register` — Register user under an institution tenant
+- `POST /api/v1/auth/login` — Authenticate user & receive JWT access + refresh tokens
+- `POST /api/v1/auth/refresh` — Rotate refresh token for new access token
+- `GET /api/v1/users/me` — Get current user profile
 
-- `JwtAuthenticationFilter` extracts `tenantId` from JWT and sets `TenantContext`
-- ALL service-layer queries include `AND tenant_id = :tenantId` via `UserRepository.findByIdAndTenantId()`
-- **Frontend-supplied `tenant_id` is NEVER trusted** — only the JWT-derived context is used
-- Test: `TenantIsolationTest` proves Tenant B cannot access Tenant A resources
+### Skill Management & Catalog
+- `GET /api/v1/skill-categories` — List all skill categories
+- `GET /api/v1/skills` — Search & explore skill catalog
+- `GET /api/v1/users/me/skills` — Get current user's teachable & learnable skills
+- `POST /api/v1/users/me/skills` — Add skill to user profile
+- `DELETE /api/v1/users/me/skills/{skillId}` — Remove skill from profile
 
-### JWT Token Flow
+### Learning Goals
+- `GET /api/v1/users/me/learning-goals` — Get user's learning goals
+- `POST /api/v1/users/me/learning-goals` — Create a new learning goal
+- `DELETE /api/v1/users/me/learning-goals/{id}` — Delete a learning goal
 
-```
-Login → access_token (15min) + refresh_token (7 days)
-  ↓
-Access token expires → POST /auth/refresh
-  ↓
-Old refresh token revoked + new pair issued (rotation)
-  ↓
-Token reuse detected → ALL user tokens revoked (security event)
-```
-
-### Rate Limiting
-
-In-memory sliding window per IP:
-- Login: 10 requests per 15 minutes
-- Register: 5 requests per 60 minutes
-
-> Phase 2: Replace with Redis-backed Bucket4j for distributed rate limiting
+### Marketplace & Peer Exchange
+- `GET /api/v1/marketplace/users` — Search peer user profiles by skill
+- `GET /api/v1/marketplace/users/{id}` — Get public peer profile
+- `POST /api/v1/exchange-requests` — Send a skill exchange request
+- `PUT /api/v1/exchange-requests/{id}/status` — Accept or decline an exchange request
+- `GET /api/v1/dashboard` — Fetch complete dashboard summary (pending requests, skills, goals, and AI match recommendations)
 
 ---
 
-## Running Tests
+## 🧪 Testing
 
-### Backend
-
+### Backend Unit & Integration Tests
 ```bash
 cd backend
 ./mvnw test
 ```
+*Includes tests for `JwtServiceTest`, `TenantContextTest`, and `TenantIsolationTest`.*
 
-| Test | Type | Covers |
-|---|---|---|
-| `JwtServiceTest` | Unit | Token generation, claim extraction, tamper detection |
-| `TenantContextTest` | Unit | ThreadLocal lifecycle |
-| `TenantIsolationTest` | Unit (Security) | Cross-tenant data access prevention |
-
-### Frontend
-
+### Frontend Vitest Suite
 ```bash
 cd frontend
 npm run test
 ```
 
-| Test | Covers |
-|---|---|
-| `auth.test.tsx` | Token storage and session clearing |
-| `Button.test.tsx` | Component rendering, click handlers, loading state |
+### Production Build Check
+```bash
+cd frontend
+npm run build
+```
 
 ---
 
-## Design System
+## 📄 License
 
-| Token | Value |
-|---|---|
-| Primary Navy | `#0B1220` |
-| Primary Teal | `#14B8A6` |
-| Mint Accent | `#5EEAD4` |
-| AI Blue | `#3B82F6` |
-| Background | `#F8FAFC` |
-| Card | `#FFFFFF` |
-| Border | `#E2E8F0` |
-| Font | Inter |
-| Button radius | 8px |
-| Card radius | 12px |
-| Panel radius | 16px |
-
----
-
-## What's NOT in Phase 1
-
-The following features are deliberately deferred to future phases:
-
-- [ ] Skill graph and semantic search
-- [ ] AI recommendation engine
-- [ ] Skill credit ledger
-- [ ] Peer-to-peer session scheduling
-- [ ] Reputation and review system
-- [ ] Email verification
-- [ ] Redis-backed rate limiting
-- [ ] AWS deployment (ECS/RDS)
-- [ ] MLOps pipeline
-
----
-
-## License
-
-MIT License — See `LICENSE` for details.
+MIT License — see `LICENSE` for details.
