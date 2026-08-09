@@ -20,12 +20,12 @@ public interface SkillRepository extends JpaRepository<Skill, UUID> {
            "LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<Skill> searchByName(@Param("search") String search);
 
-    @Query("SELECT s FROM Skill s WHERE s.isGlobal = true AND s.categoryId = :categoryId AND " +
+    @Query("SELECT s FROM Skill s WHERE s.isGlobal = true AND s.categoryId IN :categoryIds AND " +
            "LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%'))")
-    List<Skill> searchByNameAndCategory(@Param("search") String search, @Param("categoryId") UUID categoryId);
+    List<Skill> searchByNameAndCategoryIds(@Param("search") String search, @Param("categoryIds") List<UUID> categoryIds);
 
-    @Query("SELECT s FROM Skill s WHERE s.isGlobal = true AND s.categoryId = :categoryId")
-    List<Skill> findByCategoryIdAndGlobal(@Param("categoryId") UUID categoryId);
+    @Query("SELECT s FROM Skill s WHERE s.isGlobal = true AND s.categoryId IN :categoryIds")
+    List<Skill> findByCategoryIdInAndGlobal(@Param("categoryIds") List<UUID> categoryIds);
 
     boolean existsByNameAndCategoryId(String name, UUID categoryId);
 }

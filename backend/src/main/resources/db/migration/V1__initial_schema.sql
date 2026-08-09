@@ -88,7 +88,7 @@ CREATE TABLE audit_logs (
 -- ── Indexes ───────────────────────────────────────────────────
 CREATE INDEX idx_users_email              ON users(email);
 CREATE INDEX idx_users_tenant_id          ON users(tenant_id);
-CREATE INDEX idx_users_tenant_email       ON users(tenant_id, email(191));
+CREATE INDEX idx_users_tenant_email       ON users(tenant_id, email);
 CREATE INDEX idx_users_status             ON users(status);
 CREATE INDEX idx_refresh_tokens_hash      ON refresh_tokens(token_hash);
 CREATE INDEX idx_refresh_tokens_user_id   ON refresh_tokens(user_id);

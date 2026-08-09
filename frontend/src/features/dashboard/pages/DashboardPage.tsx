@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../lib/auth';
-import { getDashboardData, respondToExchangeRequest } from '../../../lib/apiClient';
-import { DashboardSummary } from '../../../types';
+import { getDashboardData, respondToExchangeRequest, getWallet, getMySessions, getMyTrustScore } from '../../../lib/apiClient';
+import { DashboardSummary, CreditWallet, Session, TrustScore } from '../../../types';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
@@ -9,6 +9,7 @@ import { SkillLevelBadge } from '../../../components/common/SkillLevelBadge';
 import {
   Sparkles, Award, Target, ArrowLeftRight, Plus, Compass,
   CheckCircle, XCircle, UserCheck, TrendingUp, Clock,
+  Coins, Calendar, Star,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,9 +18,19 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  // Phase 3 state
+  const [wallet, setWallet]         = useState<CreditWallet | null>(null);
+  const [sessions, setSessions]     = useState<Session[]>([]);
+  const [trustScore, setTrustScore] = useState<TrustScore | null>(null);
 
   const fetchDashboard = () => {
     getDashboardData().then(setData).catch(console.error).finally(() => setLoading(false));
+    // Phase 3 — load in parallel, silent-fail so they don't block main dashboard
+    if (user?.id) {
+      getWallet().then(setWallet).catch(() => null);
+      getMySessions().then((s) => setSessions(Array.isArray(s) ? s : [])).catch(() => null);
+      getMyTrustScore(user.id).then(setTrustScore).catch(() => null);
+    }
   };
 
   useEffect(() => { fetchDashboard(); }, []);
@@ -64,7 +75,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* ─── Stat Cards ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
           {
             label: 'Skills Listed',
@@ -72,6 +83,7 @@ export const DashboardPage: React.FC = () => {
             icon: Award,
             color: 'text-teal-600',
             bg: 'bg-teal-50',
+            path: '/skills',
           },
           {
             label: 'Pending Exchanges',
@@ -79,6 +91,7 @@ export const DashboardPage: React.FC = () => {
             icon: ArrowLeftRight,
             color: 'text-aiBlue',
             bg: 'bg-blue-50',
+            path: '/sessions',
           },
           {
             label: 'Learning Goals',
@@ -86,17 +99,46 @@ export const DashboardPage: React.FC = () => {
             icon: Target,
             color: 'text-violet-600',
             bg: 'bg-violet-50',
+            path: '/learning-goals',
+          },
+          {
+            label: 'Skill Credits',
+            value: wallet ? wallet.balance.toFixed(1) : '—',
+            icon: Coins,
+            color: 'text-teal-600',
+            bg: 'bg-teal-50',
+            path: '/credits',
+          },
+          {
+            label: 'Upcoming Sessions',
+            value: sessions.filter((s) => s.status === 'SCHEDULED').length,
+            icon: Calendar,
+            color: 'text-aiBlue',
+            bg: 'bg-blue-50',
+            path: '/sessions',
+          },
+          {
+            label: 'Trust Score',
+            value: trustScore ? Math.round(trustScore.trustScore) : '—',
+            icon: Star,
+            color: 'text-amber-500',
+            bg: 'bg-amber-50',
+            path: '/reputation',
           },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="p-5 flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-btn ${stat.bg} flex items-center justify-center shrink-0`}>
-                <Icon className={`w-5 h-5 ${stat.color}`} />
+            <Card
+              key={stat.label}
+              className="p-4 flex items-center gap-3 cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate(stat.path)}
+            >
+              <div className={`w-9 h-9 rounded-btn ${stat.bg} flex items-center justify-center shrink-0`}>
+                <Icon className={`w-4 h-4 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-2xl font-bold text-slateText-900">{loading ? '—' : stat.value}</div>
-                <div className="text-xs text-slateText-500 font-medium">{stat.label}</div>
+                <div className="text-xl font-bold text-slateText-900">{loading ? '—' : stat.value}</div>
+                <div className="text-[10px] text-slateText-500 font-medium leading-tight">{stat.label}</div>
               </div>
             </Card>
           );

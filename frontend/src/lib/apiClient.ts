@@ -202,3 +202,145 @@ export const getDashboardData = async () => {
   return data.data;
 };
 
+// ── Phase 3 API Functions ─────────────────────────────────────
+
+// Availability
+export const getMyAvailability = async () => {
+  const { data } = await apiClient.get('/users/me/availability');
+  return data.data;
+};
+
+export const createAvailability = async (req: { dayOfWeek: string; startTime: string; endTime: string; timezone?: string }) => {
+  const { data } = await apiClient.post('/users/me/availability', req);
+  return data.data;
+};
+
+export const updateAvailability = async (id: string, req: { dayOfWeek: string; startTime: string; endTime: string; timezone?: string }) => {
+  const { data } = await apiClient.put(`/users/me/availability/${id}`, req);
+  return data.data;
+};
+
+export const deleteAvailability = async (id: string) => {
+  const { data } = await apiClient.delete(`/users/me/availability/${id}`);
+  return data.data;
+};
+
+export const getAvailabilityOverlap = async (userId: string) => {
+  const { data } = await apiClient.get(`/users/${userId}/availability/overlap`);
+  return data.data;
+};
+
+// Matches
+export const getMatches = async (params?: { skill?: string; learningGoal?: string; proficiency?: string; language?: string; location?: string; page?: number; size?: number }) => {
+  const { data } = await apiClient.get('/matches', { params });
+  return data.data;
+};
+
+// Sessions
+export const createSession = async (req: { exchangeRequestId: string; scheduledStart: string; scheduledEnd: string; timezone?: string; meetingLink?: string }) => {
+  const { data } = await apiClient.post('/sessions', req);
+  return data.data;
+};
+
+export const getMySessions = async () => {
+  const { data } = await apiClient.get('/sessions');
+  return data.data;
+};
+
+export const getSessionById = async (id: string) => {
+  const { data } = await apiClient.get(`/sessions/${id}`);
+  return data.data;
+};
+
+export const startSession = async (id: string) => {
+  const { data } = await apiClient.patch(`/sessions/${id}/start`);
+  return data.data;
+};
+
+export const completeSession = async (id: string) => {
+  const { data } = await apiClient.patch(`/sessions/${id}/complete`);
+  return data.data;
+};
+
+export const cancelSession = async (id: string, reason?: string) => {
+  const { data } = await apiClient.patch(`/sessions/${id}/cancel`, { reason });
+  return data.data;
+};
+
+export const reportNoShow = async (id: string, reason?: string) => {
+  const { data } = await apiClient.patch(`/sessions/${id}/no-show`, { reason });
+  return data.data;
+};
+
+// Credits
+export const getCreditWallet = async () => {
+  const { data } = await apiClient.get('/credits/wallet');
+  return data.data;
+};
+
+export const getCreditTransactions = async (page = 0, size = 20) => {
+  const { data } = await apiClient.get('/credits/transactions', { params: { page, size } });
+  return data.data;
+};
+
+// Reviews & Reputation
+export const createReview = async (sessionId: string, req: { rating: number; comment?: string }) => {
+  const { data } = await apiClient.post(`/sessions/${sessionId}/review`, req);
+  return data.data;
+};
+
+export const getUserReviews = async (userId: string) => {
+  const { data } = await apiClient.get(`/users/${userId}/reviews`);
+  return data.data;
+};
+
+export const getUserTrustScore = async (userId: string) => {
+  const { data } = await apiClient.get(`/users/${userId}/trust-score`);
+  return data.data;
+};
+
+// Notifications
+export const getNotifications = async (page = 0, size = 20) => {
+  const { data } = await apiClient.get('/notifications', { params: { page, size } });
+  return data.data;
+};
+
+export const getUnreadNotificationCount = async () => {
+  const { data } = await apiClient.get('/notifications/unread-count');
+  return data.data;
+};
+
+export const markNotificationRead = async (id: string) => {
+  const { data } = await apiClient.patch(`/notifications/${id}/read`);
+  return data.data;
+};
+
+export const markAllNotificationsRead = async () => {
+  const { data } = await apiClient.patch('/notifications/read-all');
+  return data.data;
+};
+
+// Disputes
+export const createDispute = async (sessionId: string, req: { reason: string; description?: string }) => {
+  const { data } = await apiClient.post(`/sessions/${sessionId}/disputes`, req);
+  return data.data;
+};
+
+export const getMyDisputes = async () => {
+  const { data } = await apiClient.get('/disputes');
+  return data.data;
+};
+
+export const getDisputeById = async (id: string) => {
+  const { data } = await apiClient.get(`/disputes/${id}`);
+  return data.data;
+};
+
+// ── Convenience aliases used by UI pages ───────────────────────
+export const getWallet              = getCreditWallet;
+export const getSession             = getSessionById;
+export const markNoShow             = reportNoShow;
+export const submitReview           = createReview;
+export const getMyReviews           = getUserReviews;
+export const getMyTrustScore        = getUserTrustScore;
+export const getMyDisputes_alias    = getMyDisputes;

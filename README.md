@@ -1,6 +1,6 @@
 # SkillBarter AI — AI-Powered Skill Exchange & Learning Marketplace
 
-> Connect with institutional peers for peer-to-peer skill exchanges powered by multi-tenant security, skill matching, and AI learning roadmaps.
+> Connect with institutional peers for peer-to-peer skill exchanges powered by multi-tenant security, skill matching, session scheduling, credit ledger, dynamic reputation, and AI learning roadmaps.
 
 ---
 
@@ -31,6 +31,43 @@ The platform is designed as a **Modular Monolith** with clean domain boundary se
   - **Skill Exchange Requests:** Propose exchange requests specifying *"Skill I Offer"* vs *"Skill I Want"* with custom messages.
   - **Request Lifecycle Management:** Pending exchange request alerts on the dashboard with instant **Accept** / **Decline** actions.
 - **Skill Match Recommendation Engine:** Matches peers whose offered teachable skills align with your declared learning targets and goals.
+
+### 🟢 Phase 3 — Exchange Engine & Reputation Ecosystem
+- **User Availability & Overlap Calculation:** Timezone-aware weekly availability schedules (`AvailabilityOverlapService`) calculating overlap minutes for schedule compatibility scoring.
+- **Multi-Factor AI Matching Engine:** Deterministic scoring across 5 weighted dimensions (Skill Compatibility 35%, Goal Alignment 25%, Availability Overlap 20%, Proficiency Balance 10%, Trust Score 10%).
+- **Session Lifecycle & Scheduling:** Full session state machine (`SCHEDULED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `COMPLETED` / `CANCELLED` / `NO_SHOW` / `DISPUTED`) with server-side double-booking conflict prevention.
+- **Skill Credits Ledger:** Immutable credit transaction wallet (+1.0 Credit earned for teaching, -1.0 Credit spent for learning) triggered automatically and idempotently on session completion.
+- **Reputation & Dynamic Trust Score:** Dynamic 5-component trust score algorithm (Rating 40%, Completion Rate 20%, Reliability 20%, Response Rate 10%, Cancellation Penalty 10%) with verified peer reviews.
+- **In-App Notifications:** Real-time notification bell dropdown for session state changes, credit settlements, reviews, and exchange request alerts.
+- **Dispute Resolution Foundation:** Dispute creation and tracking workflow for session non-compliance or issues.
+
+---
+
+## 🔄 Phase 3 Exchange Engine Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Learner
+    actor Teacher
+    participant MatchingEngine as AI Matching Engine
+    participant SessionService as Session Service
+    participant CreditService as Credit Ledger
+    participant TrustService as Reputation Engine
+
+    Learner->>MatchingEngine: Request Peer Matches
+    MatchingEngine-->>Learner: Scored Candidates & Compatibility Breakdown
+    Learner->>Teacher: Send Exchange Request (Skill A for Skill B)
+    Teacher->>SessionService: Accept Request & Schedule Session
+    SessionService-->>Learner: Session Created (SCHEDULED) & Notification Sent
+    Teacher->>SessionService: Start Session (IN_PROGRESS)
+    Teacher->>SessionService: Complete Session (COMPLETED)
+    SessionService->>CreditService: Settle Session Credits (Idempotent)
+    CreditService-->>Teacher: +1.0 Skill Credit (EARN)
+    CreditService-->>Learner: -1.0 Skill Credit (SPEND)
+    Learner->>TrustService: Submit Peer Review & Rating
+    TrustService-->>Teacher: Recalculate Dynamic Trust Score
+```
 
 ---
 
@@ -80,13 +117,20 @@ skillbarter-ai/
 │   │   ├── identity/       # Auth: Login, Register, Refresh Token Rotation
 │   │   ├── user/           # User profile management & security audit logging
 │   │   ├── skill/          # Skill taxonomy, categories, user skills, learning goals
-│   │   └── marketplace/    # Exchange requests & peer match recommendation engine
+│   │   ├── marketplace/    # Exchange requests & peer match recommendation engine
+│   │   ├── availability/   # Weekly availability slots & timezone-aware overlap calculator
+│   │   ├── matching/       # Configurable multi-factor weighted matching engine
+│   │   ├── session/        # Session lifecycle state machine & conflict prevention
+│   │   ├── credits/        # Skill credits wallet & immutable ledger transactions
+│   │   ├── reputation/     # Verified peer reviews & dynamic trust score algorithm
+│   │   ├── notification/   # In-app notifications & domain event dispatching
+│   │   └── dispute/        # Session dispute cases & resolution workflow
 │   └── src/main/resources/
-│       └── db/migration/   # Flyway V1 (Identity) & V2 (Skill Ecosystem) migrations
+│       └── db/migration/   # Flyway V1 (Identity), V2 (Skill Ecosystem), V3 (Exchange Engine)
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # UI primitives (Button, Card, Input, Badge), Layout (Navbar, Sidebar)
-│   │   ├── features/       # Feature pages: auth, dashboard, skills, goals, marketplace, profile
+│   │   ├── components/     # UI primitives (Button, Card, Badge), NotificationDropdown, Layout
+│   │   ├── features/       # Feature pages: auth, dashboard, skills, goals, matches, availability, sessions, credits, reputation, disputes
 │   │   ├── lib/            # Auth context provider & API client helper functions
 │   │   └── types/          # TypeScript interface definitions
 │   └── index.html
@@ -163,6 +207,7 @@ npm run dev
 |---|---|
 | `V1__initial_schema.sql` | Core identity: `tenants`, `users`, `roles`, `user_roles`, `refresh_tokens`, `audit_logs` |
 | `V2__skill_ecosystem.sql` | Marketplace ecosystem: `skill_categories`, `skills`, `skill_prerequisites`, `user_skills`, `learning_goals`, `exchange_requests` |
+| `V3__exchange_engine.sql` | Phase 3 Exchange Engine: `user_availability`, `sessions`, `credit_wallets`, `credit_transactions`, `reviews`, `trust_scores`, `notifications`, `disputes` |
 
 ---
 
@@ -174,24 +219,27 @@ npm run dev
 - `POST /api/v1/auth/refresh` — Rotate refresh token for new access token
 - `GET /api/v1/users/me` — Get current user profile
 
-### Skill Management & Catalog
-- `GET /api/v1/skill-categories` — List all skill categories
-- `GET /api/v1/skills` — Search & explore skill catalog
-- `GET /api/v1/users/me/skills` — Get current user's teachable & learnable skills
-- `POST /api/v1/users/me/skills` — Add skill to user profile
-- `DELETE /api/v1/users/me/skills/{skillId}` — Remove skill from profile
+### Availability & Matching
+- `GET /api/v1/users/me/availability` — List weekly availability slots
+- `POST /api/v1/users/me/availability` — Add availability time slot
+- `GET /api/v1/matches` — Get multi-factor scored peer matches
 
-### Learning Goals
-- `GET /api/v1/users/me/learning-goals` — Get user's learning goals
-- `POST /api/v1/users/me/learning-goals` — Create a new learning goal
-- `DELETE /api/v1/users/me/learning-goals/{id}` — Delete a learning goal
+### Sessions & Exchange Execution
+- `POST /api/v1/sessions` — Schedule session from exchange request
+- `GET /api/v1/sessions` — List user's sessions with status filters
+- `PATCH /api/v1/sessions/{id}/start` — Start session (`IN_PROGRESS`)
+- `PATCH /api/v1/sessions/{id}/complete` — Complete session & settle credits (`COMPLETED`)
 
-### Marketplace & Peer Exchange
-- `GET /api/v1/marketplace/users` — Search peer user profiles by skill
-- `GET /api/v1/marketplace/users/{id}` — Get public peer profile
-- `POST /api/v1/exchange-requests` — Send a skill exchange request
-- `PUT /api/v1/exchange-requests/{id}/status` — Accept or decline an exchange request
-- `GET /api/v1/dashboard` — Fetch complete dashboard summary (pending requests, skills, goals, and AI match recommendations)
+### Skill Credits & Reputation
+- `GET /api/v1/credits/wallet` — Check credit wallet balance
+- `GET /api/v1/credits/transactions` — Ledger transaction history
+- `POST /api/v1/sessions/{id}/review` — Submit peer rating & review
+- `GET /api/v1/users/{id}/trust-score` — View calculated reputation trust score
+
+### Notifications & Disputes
+- `GET /api/v1/notifications` — Fetch in-app notifications
+- `PATCH /api/v1/notifications/{id}/read` — Mark notification read
+- `POST /api/v1/sessions/{id}/disputes` — Raise session dispute
 
 ---
 
@@ -202,19 +250,30 @@ npm run dev
 cd backend
 ./mvnw test
 ```
-*Includes tests for `JwtServiceTest`, `TenantContextTest`, and `TenantIsolationTest`.*
+*Includes unit test suite (`AvailabilityOverlapServiceTest`, `SessionStateValidatorTest`, `CreditServiceTest`) and full end-to-end integration test (`Phase3CompleteJourneyIT`).*
 
-### Frontend Vitest Suite
-```bash
-cd frontend
-npm run test
-```
-
-### Production Build Check
+### Frontend Build Verification
 ```bash
 cd frontend
 npm run build
 ```
+
+---
+
+## 📄 Architecture Decision Records (ADRs)
+
+| ADR ID | Title |
+|---|---|
+| `ADR-001` | Modular Monolith Architecture |
+| `ADR-002` | Multi-Tenant Isolation Pattern |
+| `ADR-003` | Refresh Token Rotation & Reuse Detection |
+| `ADR-004` | Skill Taxonomy & Hierarchical Prerequisites |
+| `ADR-005` | Skill Level & Learning Goal Model |
+| `ADR-006` | Availability Model & Overlap Detection |
+| `ADR-007` | AI Matching Engine Design |
+| `ADR-008` | Session Lifecycle & Conflict Management |
+| `ADR-009` | Reputation & Dynamic Trust Score Calculation |
+| `ADR-010` | Notification Architecture & Event Decoupling |
 
 ---
 

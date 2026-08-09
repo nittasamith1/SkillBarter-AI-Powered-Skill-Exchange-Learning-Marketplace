@@ -10,6 +10,14 @@ import { SkillsPage } from '../../features/skills/pages/SkillsPage';
 import { ExploreSkillsPage } from '../../features/skills/pages/ExploreSkillsPage';
 import { LearningGoalsPage } from '../../features/goals/pages/LearningGoalsPage';
 import { UserProfilePage } from '../../features/marketplace/pages/UserProfilePage';
+// Phase 3
+import { MatchesPage } from '../../features/matches/pages/MatchesPage';
+import { AvailabilityPage } from '../../features/availability/pages/AvailabilityPage';
+import { SessionsPage } from '../../features/sessions/pages/SessionsPage';
+import { SessionDetailPage } from '../../features/sessions/pages/SessionDetailPage';
+import { CreditsPage } from '../../features/credits/pages/CreditsPage';
+import { ReputationPage } from '../../features/reputation/pages/ReputationPage';
+import { DisputesPage } from '../../features/disputes/pages/DisputesPage';
 
 const router = createBrowserRouter([
   {
@@ -26,34 +34,22 @@ const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          {
-            path: '/dashboard',
-            element: <DashboardPage />,
-          },
-          {
-            path: '/skills',
-            element: <SkillsPage />,
-          },
-          {
-            path: '/skills/explore',
-            element: <ExploreSkillsPage />,
-          },
-          {
-            path: '/learning-goals',
-            element: <LearningGoalsPage />,
-          },
-          {
-            path: '/users/:id',
-            element: <UserProfilePage />,
-          },
-          {
-            path: '/profile',
-            element: <ProfilePage />,
-          },
-          {
-            path: '/settings',
-            element: <ProfilePage />,
-          },
+          // Phase 1 & 2
+          { path: '/dashboard',       element: <DashboardPage /> },
+          { path: '/skills',          element: <SkillsPage /> },
+          { path: '/skills/explore',  element: <ExploreSkillsPage /> },
+          { path: '/learning-goals',  element: <LearningGoalsPage /> },
+          { path: '/users/:id',       element: <UserProfilePage /> },
+          { path: '/profile',         element: <ProfilePage /> },
+          { path: '/settings',        element: <ProfilePage /> },
+          // Phase 3 — Exchange Engine
+          { path: '/matches',              element: <MatchesPage /> },
+          { path: '/availability',         element: <AvailabilityPage /> },
+          { path: '/sessions',             element: <SessionsPage /> },
+          { path: '/sessions/:id',         element: <SessionDetailPage /> },
+          { path: '/credits',              element: <CreditsPage /> },
+          { path: '/reputation',           element: <ReputationPage /> },
+          { path: '/disputes',             element: <DisputesPage /> },
         ],
       },
     ],

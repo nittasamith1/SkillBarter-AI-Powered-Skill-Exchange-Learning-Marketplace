@@ -64,6 +64,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/exchange-requests/**").authenticated()
                         .requestMatchers("/api/v1/marketplace/**").authenticated()
                         .requestMatchers("/api/v1/dashboard/**").authenticated()
+                        .requestMatchers("/api/v1/matches/**").authenticated()
+                        .requestMatchers("/api/v1/sessions/**").authenticated()
+                        .requestMatchers("/api/v1/credits/**").authenticated()
+                        .requestMatchers("/api/v1/notifications/**").authenticated()
+                        .requestMatchers("/api/v1/disputes/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

@@ -64,12 +64,21 @@ public class SkillService {
     @Transactional(readOnly = true)
     public List<SkillResponse> searchSkills(String search, UUID categoryId) {
         List<Skill> skills;
-        if (search != null && !search.isBlank() && categoryId != null) {
-            skills = skillRepository.searchByNameAndCategory(search.trim(), categoryId);
+        if (categoryId != null) {
+            List<UUID> targetCategoryIds = new ArrayList<>();
+            targetCategoryIds.add(categoryId);
+            categoryRepository.findAll().stream()
+                    .filter(c -> categoryId.equals(c.getParentId()))
+                    .map(SkillCategory::getId)
+                    .forEach(targetCategoryIds::add);
+
+            if (search != null && !search.isBlank()) {
+                skills = skillRepository.searchByNameAndCategoryIds(search.trim(), targetCategoryIds);
+            } else {
+                skills = skillRepository.findByCategoryIdInAndGlobal(targetCategoryIds);
+            }
         } else if (search != null && !search.isBlank()) {
             skills = skillRepository.searchByName(search.trim());
-        } else if (categoryId != null) {
-            skills = skillRepository.findByCategoryIdAndGlobal(categoryId);
         } else {
             skills = skillRepository.findByIsGlobalTrue();
         }

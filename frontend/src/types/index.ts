@@ -183,3 +183,171 @@ export interface DashboardSummary {
   recommendedMatches: RecommendedMatch[];
   pendingRequests: ExchangeRequest[];
 }
+
+// ── Phase 3 Types ──────────────────────────────────────────────
+
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+export type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'DISPUTED';
+export type DisputeStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'REJECTED';
+export type NotificationType =
+  | 'EXCHANGE_REQUEST_RECEIVED' | 'EXCHANGE_REQUEST_ACCEPTED' | 'EXCHANGE_REQUEST_REJECTED'
+  | 'SESSION_SCHEDULED' | 'SESSION_REMINDER' | 'SESSION_CANCELLED' | 'SESSION_COMPLETED'
+  | 'CREDIT_EARNED' | 'CREDIT_SPENT' | 'REVIEW_REQUESTED' | 'REVIEW_RECEIVED' | 'DISPUTE_CREATED' | 'DISPUTE_RESOLVED';
+
+export interface UserAvailability {
+  id: string;
+  userId: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+  active: boolean;
+}
+
+export interface CreateAvailabilityRequest {
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  timezone?: string;
+}
+
+export interface OverlapSlot {
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+}
+
+export interface MatchScore {
+  skillCompatibility: number;
+  goalAlignment: number;
+  availabilityOverlap: number;
+  proficiencyBalance: number;
+  trustScore: number;
+}
+
+export interface MatchCandidateSkill {
+  skillId: string;
+  skillName: string;
+  level: SkillLevel;
+}
+
+export interface MatchCandidate {
+  candidateUserId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  trustScore: number;
+  creditBalance: number;
+  availabilitySlotsCount: number;
+  totalSessionsCompleted: number;
+  canTeachSkills: MatchCandidateSkill[];
+  wantToLearnSkills: MatchCandidateSkill[];
+  scores: MatchScore;
+}
+
+export interface Session {
+  id: string;
+  tenantId: string;
+  exchangeRequestId: string;
+  teacherId: string;
+  teacherName: string;
+  learnerId: string;
+  learnerName: string;
+  skillId: string;
+  skillName: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  scheduledAt: string;         // alias: same as scheduledStart
+  durationMinutes?: number;
+  startedAt?: string;
+  completedAt?: string;
+  timezone: string;
+  status: SessionStatus;
+  meetingLink?: string;
+  cancellationReason?: string;
+  creditsSettled: boolean;
+  createdAt: string;
+}
+
+export interface CreateSessionRequest {
+  exchangeRequestId: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  timezone?: string;
+  meetingLink?: string;
+}
+
+export interface CreditWallet {
+  id: string;
+  userId: string;
+  balance: number;
+  updatedAt: string;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  balanceAfter: number;
+  type: 'EARN' | 'SPEND' | 'REFUND' | 'PENALTY' | 'ADJUSTMENT' | 'INITIAL';
+  referenceType?: string;
+  referenceId?: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface Review {
+  id: string;
+  sessionId: string;
+  reviewerId: string;
+  reviewerName: string;
+  revieweeId: string;
+  revieweeName: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface TrustScore {
+  userId: string;
+  overallScore: number;          // mapped from trustScore backend field
+  trustScore: number;            // raw backend field
+  ratingScore: number;
+  completionScore: number;
+  reliabilityScore: number;
+  responseScore: number;
+  cancellationScore: number;
+  cancellationPenalty: number;   // alias for cancellationScore
+  averageRating: number;
+  totalReviews: number;
+  completedSessions: number;
+  cancelledSessions: number;
+  updatedAt: string;
+  calculatedAt: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  type: NotificationType | string;
+  title: string;
+  message: string;
+  read: boolean;
+  referenceType?: string;
+  referenceId?: string;
+  createdAt: string;
+}
+
+export interface Dispute {
+  id: string;
+  sessionId: string;
+  raisedBy: string;
+  raisedByName: string;
+  reason: string;
+  description?: string;
+  status: DisputeStatus;
+  resolution?: string;
+  createdAt: string;
+  resolvedAt?: string;
+}

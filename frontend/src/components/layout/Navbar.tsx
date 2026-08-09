@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../lib/auth';
-import { Bell, User as UserIcon, LogOut, ChevronDown, Search } from 'lucide-react';
+import { User as UserIcon, LogOut, ChevronDown, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { NotificationDropdown } from '../notifications/NotificationDropdown';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -9,7 +10,6 @@ export const Navbar: React.FC = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -41,14 +41,7 @@ export const Navbar: React.FC = () => {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2 ml-auto">
-        {/* Notification Bell */}
-        <button
-          className="relative p-2 text-slateText-400 hover:text-slateText-700 hover:bg-surface-100 rounded-btn transition-colors"
-          title="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-teal-500 rounded-full" />
-        </button>
+        <NotificationDropdown />
 
         <div className="h-5 w-px bg-surface-200 mx-1" />
 

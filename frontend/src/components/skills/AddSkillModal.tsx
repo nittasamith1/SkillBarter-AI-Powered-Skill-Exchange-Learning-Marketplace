@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Skill, SkillCategory, SkillLevel } from '../../types';
-import { getSkillCategories, searchSkills, addMySkill } from '../../lib/apiClient';
-import { X, AlertCircle } from 'lucide-react';
+import { getSkillCategories, searchSkills, addMySkill, createSkill } from '../../lib/apiClient';
+import { X, AlertCircle, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface AddSkillModalProps {
@@ -12,26 +12,65 @@ interface AddSkillModalProps {
   onSuccess: () => void;
 }
 
+interface FlatCategory {
+  id: string;
+  name: string;
+  parentId?: string;
+}
+
 const LEVELS: SkillLevel[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'];
 const selectCls = 'w-full px-3.5 py-2.5 text-sm bg-white border border-surface-200 rounded-input text-slateText-900 placeholder-slateText-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500';
 const labelCls  = 'block text-xs font-semibold text-slateText-700 uppercase tracking-wider mb-1.5';
 
+function flattenCategoryTree(tree: SkillCategory[], prefix = ''): FlatCategory[] {
+  let result: FlatCategory[] = [];
+  for (const cat of tree) {
+    const label = prefix ? `${prefix} › ${cat.name}` : cat.name;
+    result.push({ id: cat.id, name: label, parentId: cat.parentId });
+    if (cat.children && cat.children.length > 0) {
+      result = result.concat(flattenCategoryTree(cat.children, label));
+    }
+  }
+  return result;
+}
+
 export const AddSkillModal: React.FC<AddSkillModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [categories, setCategories] = useState<SkillCategory[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
+  const [flatCategories, setFlatCategories] = useState<FlatCategory[]>([]);
+  const [skills, setSkills]                 = useState<Skill[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
-  const [selectedSkillId,    setSelectedSkillId]    = useState('');
-  const [level,              setLevel]              = useState<SkillLevel>('INTERMEDIATE');
-  const [canTeach,           setCanTeach]           = useState(true);
-  const [wantToLearn,        setWantToLearn]        = useState(false);
-  const [yearsExperience,    setYearsExperience]    = useState(1);
-  const [loading,            setLoading]            = useState(false);
-  const [error,              setError]              = useState<string | null>(null);
+  const [selectedSkillId, setSelectedSkillId]       = useState('');
+  
+  // Custom skill creation state
+  const [isCreatingCustom, setIsCreatingCustom] = useState(false);
+  const [customSkillName, setCustomSkillName]   = useState('');
+  const [customCategoryId, setCustomCategoryId] = useState('');
+
+  const [level, setLevel]                     = useState<SkillLevel>('INTERMEDIATE');
+  const [canTeach, setCanTeach]               = useState(true);
+  const [wantToLearn, setWantToLearn]         = useState(false);
+  const [yearsExperience, setYearsExperience] = useState(1);
+  const [loading, setLoading]                 = useState(false);
+  const [error, setError]                     = useState<string | null>(null);
+
+  const loadData = async () => {
+    try {
+      const [catTree, skillList] = await Promise.all([getSkillCategories(), searchSkills()]);
+      setFlatCategories(flattenCategoryTree(Array.isArray(catTree) ? catTree : []));
+      setSkills(Array.isArray(skillList) ? skillList : []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
-      getSkillCategories().then(setCategories).catch(console.error);
-      searchSkills().then(setSkills).catch(console.error);
+      loadData();
+      setIsCreatingCustom(false);
+      setCustomSkillName('');
+      setCustomCategoryId('');
+      setSelectedCategoryId('');
+      setSelectedSkillId('');
+      setError(null);
     }
   }, [isOpen]);
 
@@ -39,18 +78,62 @@ export const AddSkillModal: React.FC<AddSkillModalProps> = ({ isOpen, onClose, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSkillId) { setError('Please select a skill'); return; }
-    if (!canTeach && !wantToLearn) { setError('Select at least one: Can Teach or Want to Learn'); return; }
+    if (!canTeach && !wantToLearn) {
+      setError('Select at least one: Can Teach or Want to Learn');
+      return;
+    }
+
     try {
-      setLoading(true); setError(null);
-      await addMySkill({ skillId: selectedSkillId, level, canTeach, wantToLearn, yearsExperience: canTeach ? yearsExperience : undefined });
-      onSuccess(); onClose();
+      setLoading(true);
+      setError(null);
+
+      let targetSkillId = selectedSkillId;
+
+      if (isCreatingCustom) {
+        if (!customSkillName.trim()) { setError('Please enter a custom skill name'); setLoading(false); return; }
+        if (!customCategoryId) { setError('Please select a category for the custom skill'); setLoading(false); return; }
+        const created = await createSkill({
+          name: customSkillName.trim(),
+          categoryId: customCategoryId,
+        });
+        targetSkillId = created.id;
+      }
+
+      if (!targetSkillId) {
+        setError('Please select or create a skill');
+        setLoading(false);
+        return;
+      }
+
+      await addMySkill({
+        skillId: targetSkillId,
+        level,
+        canTeach,
+        wantToLearn,
+        yearsExperience: canTeach ? yearsExperience : undefined,
+      });
+
+      onSuccess();
+      onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to add skill');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredSkills = selectedCategoryId ? skills.filter((s) => s.categoryId === selectedCategoryId) : skills;
+  // Filter skills by selected category (including subcategories)
+  const childCategoryIds = new Set<string>();
+  if (selectedCategoryId) {
+    childCategoryIds.add(selectedCategoryId);
+    flatCategories.forEach((c) => {
+      if (c.parentId === selectedCategoryId) childCategoryIds.add(c.id);
+    });
+  }
+
+  const filteredSkills = selectedCategoryId
+    ? skills.filter((s) => childCategoryIds.has(s.categoryId))
+    : skills;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
@@ -72,23 +155,99 @@ export const AddSkillModal: React.FC<AddSkillModalProps> = ({ isOpen, onClose, o
             </div>
           )}
 
-          {/* Category filter */}
-          <div>
-            <label className={labelCls}>Filter by Category</label>
-            <select value={selectedCategoryId} onChange={(e) => { setSelectedCategoryId(e.target.value); setSelectedSkillId(''); }} className={selectCls}>
-              <option value="">All Categories</option>
-              {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-            </select>
-          </div>
+          {!isCreatingCustom ? (
+            <>
+              {/* Category filter */}
+              <div>
+                <label className={labelCls}>Filter by Category</label>
+                <select
+                  value={selectedCategoryId}
+                  onChange={(e) => {
+                    setSelectedCategoryId(e.target.value);
+                    setSelectedSkillId('');
+                  }}
+                  className={selectCls}
+                >
+                  <option value="">All Categories ({flatCategories.length})</option>
+                  {flatCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Skill select */}
-          <div>
-            <label className={labelCls}>Select Skill *</label>
-            <select value={selectedSkillId} onChange={(e) => setSelectedSkillId(e.target.value)} className={selectCls} required>
-              <option value="">Choose a skill…</option>
-              {filteredSkills.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.categoryName})</option>)}
-            </select>
-          </div>
+              {/* Skill select */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-xs font-semibold text-slateText-700 uppercase tracking-wider">Select Skill *</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingCustom(true)}
+                    className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Create Custom Skill
+                  </button>
+                </div>
+                <select
+                  value={selectedSkillId}
+                  onChange={(e) => {
+                    if (e.target.value === '__NEW__') {
+                      setIsCreatingCustom(true);
+                      setSelectedSkillId('');
+                    } else {
+                      setSelectedSkillId(e.target.value);
+                    }
+                  }}
+                  className={selectCls}
+                  required={!isCreatingCustom}
+                >
+                  <option value="">Choose a skill ({filteredSkills.length} available)…</option>
+                  {filteredSkills.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.categoryName})</option>
+                  ))}
+                  <option value="__NEW__">+ Create a new custom skill…</option>
+                </select>
+              </div>
+            </>
+          ) : (
+            /* Custom Skill Creation Mode */
+            <div className="p-4 bg-teal-50/50 border border-teal-200 rounded-btn space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-teal-700 uppercase tracking-wider">New Custom Skill</span>
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingCustom(false)}
+                  className="text-xs text-slateText-500 hover:text-slateText-700 underline"
+                >
+                  Back to Skill Catalog
+                </button>
+              </div>
+
+              <div>
+                <label className={labelCls}>Skill Name *</label>
+                <Input
+                  placeholder="e.g. Next.js, Kubernetes, Graphic Design"
+                  value={customSkillName}
+                  onChange={(e) => setCustomSkillName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className={labelCls}>Category *</label>
+                <select
+                  value={customCategoryId}
+                  onChange={(e) => setCustomCategoryId(e.target.value)}
+                  className={selectCls}
+                  required
+                >
+                  <option value="">Select Category…</option>
+                  {flatCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Level picker */}
           <div>
@@ -116,7 +275,9 @@ export const AddSkillModal: React.FC<AddSkillModalProps> = ({ isOpen, onClose, o
           <div className="space-y-3">
             <label className="flex items-start gap-3 cursor-pointer group">
               <input
-                type="checkbox" checked={canTeach} onChange={(e) => setCanTeach(e.target.checked)}
+                type="checkbox"
+                checked={canTeach}
+                onChange={(e) => setCanTeach(e.target.checked)}
                 className="w-4 h-4 mt-0.5 rounded border-surface-300 text-teal-500 focus:ring-teal-500"
               />
               <div>
@@ -126,7 +287,9 @@ export const AddSkillModal: React.FC<AddSkillModalProps> = ({ isOpen, onClose, o
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">
               <input
-                type="checkbox" checked={wantToLearn} onChange={(e) => setWantToLearn(e.target.checked)}
+                type="checkbox"
+                checked={wantToLearn}
+                onChange={(e) => setWantToLearn(e.target.checked)}
                 className="w-4 h-4 mt-0.5 rounded border-surface-300 text-teal-500 focus:ring-teal-500"
               />
               <div>
@@ -150,7 +313,9 @@ export const AddSkillModal: React.FC<AddSkillModalProps> = ({ isOpen, onClose, o
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2 border-t border-surface-200">
             <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button type="submit" isLoading={loading}>Save Skill</Button>
+            <Button type="submit" isLoading={loading}>
+              {isCreatingCustom ? 'Create & Add Skill' : 'Save Skill'}
+            </Button>
           </div>
         </form>
       </div>

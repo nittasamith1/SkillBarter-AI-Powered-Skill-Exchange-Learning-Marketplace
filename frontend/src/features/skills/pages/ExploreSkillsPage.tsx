@@ -7,9 +7,26 @@ import { SkillLevelBadge } from '../../../components/common/SkillLevelBadge';
 import { ExchangeRequestModal } from '../../../components/marketplace/ExchangeRequestModal';
 import { Search, Compass, Users, BookOpen, X, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
 
+interface FlatCategory {
+  id: string;
+  name: string;
+}
+
+function flattenCategoryTree(tree: SkillCategory[], prefix = ''): FlatCategory[] {
+  let result: FlatCategory[] = [];
+  for (const cat of tree) {
+    const label = prefix ? `${prefix} › ${cat.name}` : cat.name;
+    result.push({ id: cat.id, name: label });
+    if (cat.children && cat.children.length > 0) {
+      result = result.concat(flattenCategoryTree(cat.children, label));
+    }
+  }
+  return result;
+}
+
 export const ExploreSkillsPage: React.FC = () => {
   const [skills, setSkills] = useState<ExploreSkill[]>([]);
-  const [categories, setCategories] = useState<SkillCategory[]>([]);
+  const [categories, setCategories] = useState<FlatCategory[]>([]);
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -22,7 +39,11 @@ export const ExploreSkillsPage: React.FC = () => {
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [requestSentUserIds, setRequestSentUserIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => { getSkillCategories().then(setCategories).catch(console.error); }, []);
+  useEffect(() => {
+    getSkillCategories()
+      .then((tree) => setCategories(flattenCategoryTree(Array.isArray(tree) ? tree : [])))
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     setLoading(true);

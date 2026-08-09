@@ -66,6 +66,21 @@ app:
     login-window-minutes: 15
     register-max-requests: 5
     register-window-minutes: 60
+  matching:
+    weights:
+      skill-compatibility: 0.30
+      goal-compatibility: 0.20
+      availability: 0.20
+      proficiency: 0.10
+      language: 0.10
+      trust: 0.10
+  trust:
+    weights:
+      rating: 0.40
+      completion: 0.20
+      reliability: 0.20
+      response: 0.10
+      cancellation: 0.10
 
 logging:
   level:

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getMyLearningGoals, createLearningGoal, deleteLearningGoal, searchSkills } from '../../../lib/apiClient';
-import { LearningGoal, Skill, SkillLevel } from '../../../types';
+import { getMyLearningGoals, createLearningGoal, deleteLearningGoal, searchSkills, getSkillCategories } from '../../../lib/apiClient';
+import { LearningGoal, Skill, SkillCategory, SkillLevel } from '../../../types';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { GoalCard } from '../../../components/goals/GoalCard';
@@ -11,9 +11,28 @@ const LEVELS: SkillLevel[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'];
 const selectCls = 'w-full px-3.5 py-2.5 text-sm bg-white border border-surface-200 rounded-input text-slateText-900 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500';
 const labelCls = 'block text-xs font-semibold text-slateText-700 uppercase tracking-wider mb-1.5';
 
+interface FlatCategory {
+  id: string;
+  name: string;
+}
+
+function flattenCategoryTree(tree: SkillCategory[], prefix = ''): FlatCategory[] {
+  let result: FlatCategory[] = [];
+  for (const cat of tree) {
+    const label = prefix ? `${prefix} › ${cat.name}` : cat.name;
+    result.push({ id: cat.id, name: label });
+    if (cat.children && cat.children.length > 0) {
+      result = result.concat(flattenCategoryTree(cat.children, label));
+    }
+  }
+  return result;
+}
+
 export const LearningGoalsPage: React.FC = () => {
   const [goals, setGoals] = useState<LearningGoal[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [categories, setCategories] = useState<FlatCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,6 +53,7 @@ export const LearningGoalsPage: React.FC = () => {
   useEffect(() => {
     fetchGoals();
     searchSkills().then(setSkills).catch(console.error);
+    getSkillCategories().then((tree) => setCategories(flattenCategoryTree(Array.isArray(tree) ? tree : []))).catch(console.error);
   }, []);
 
   const handleCreateGoal = async (e: React.FormEvent) => {
@@ -109,10 +129,26 @@ export const LearningGoalsPage: React.FC = () => {
               )}
 
               <div>
+                <label className={labelCls}>Filter Category (Optional)</label>
+                <select
+                  value={selectedCategoryId}
+                  onChange={(e) => { setSelectedCategoryId(e.target.value); setTargetSkillId(''); }}
+                  className={selectCls}
+                >
+                  <option value="">All Categories ({categories.length})</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className={labelCls}>Target Skill *</label>
                 <select value={targetSkillId} onChange={(e) => setTargetSkillId(e.target.value)} className={selectCls} required>
                   <option value="">Choose a skill…</option>
-                  {skills.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.categoryName})</option>)}
+                  {(selectedCategoryId ? skills.filter((s) => s.categoryId === selectedCategoryId) : skills).map((s) => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.categoryName})</option>
+                  ))}
                 </select>
               </div>
 

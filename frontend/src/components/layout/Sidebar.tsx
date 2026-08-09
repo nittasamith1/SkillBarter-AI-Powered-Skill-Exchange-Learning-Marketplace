@@ -1,6 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, User, Settings, Sparkles, Award, Compass, Target, Calendar, ArrowLeftRight } from 'lucide-react';
+import {
+  LayoutDashboard, User, Settings, Sparkles, Award, Compass, Target,
+  Calendar, ArrowLeftRight, Coins, Star, ShieldAlert, Users2,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 
 const navGroups = [
@@ -14,10 +17,14 @@ const navGroups = [
     ],
   },
   {
-    label: 'Exchange',
+    label: 'Exchange Engine',
     items: [
-      { name: 'Sessions',  path: '#', icon: Calendar,         disabled: true, tag: 'Phase 3' },
-      { name: 'Exchanges', path: '#', icon: ArrowLeftRight,   disabled: true, tag: 'Phase 3' },
+      { name: 'Matches',      path: '/matches',      icon: Users2 },
+      { name: 'Availability', path: '/availability', icon: Calendar },
+      { name: 'Sessions',     path: '/sessions',     icon: ArrowLeftRight },
+      { name: 'Credits',      path: '/credits',      icon: Coins },
+      { name: 'Reputation',   path: '/reputation',   icon: Star },
+      { name: 'Disputes',     path: '/disputes',     icon: ShieldAlert },
     ],
   },
   {
@@ -114,10 +121,10 @@ export const Sidebar: React.FC = () => {
         <div className="rounded-btn p-3 bg-teal-500/8 border border-teal-500/15">
           <div className="flex items-center gap-1.5 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-            <span className="text-[11px] font-semibold text-teal-300">Phase 2 · Active</span>
+            <span className="text-[11px] font-semibold text-teal-300">Phase 3 · Active</span>
           </div>
           <p className="text-[11px] text-white/30 leading-relaxed">
-            Skill Catalog & Peer Exchange Marketplace
+            Exchange Engine · Sessions · Credits · Reputation
           </p>
         </div>
       </div>

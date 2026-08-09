@@ -119,80 +119,80 @@ CREATE INDEX idx_exchange_req_tenant      ON exchange_requests(tenant_id);
 
 -- ── Seed: Root Categories ─────────────────────────────────────
 INSERT INTO skill_categories (id, name, description, parent_id) VALUES
-    ('cat-0001-0000-0000-0000-000000000001', 'Programming',   'Software development and coding skills', NULL),
-    ('cat-0001-0000-0000-0000-000000000002', 'Design',        'UI/UX, graphic, and visual design',      NULL),
-    ('cat-0001-0000-0000-0000-000000000003', 'Data Science',  'Data analysis, ML, and statistics',      NULL),
-    ('cat-0001-0000-0000-0000-000000000004', 'Business',      'Business, management, and finance',      NULL),
-    ('cat-0001-0000-0000-0000-000000000005', 'Languages',     'Spoken and written human languages',     NULL),
-    ('cat-0001-0000-0000-0000-000000000006', 'Mathematics',   'Pure and applied mathematics',           NULL),
-    ('cat-0001-0000-0000-0000-000000000007', 'Other',         'Miscellaneous skills',                   NULL);
+    ('ca000001-0000-0000-0000-000000000001', 'Programming',   'Software development and coding skills', NULL),
+    ('ca000001-0000-0000-0000-000000000002', 'Design',        'UI/UX, graphic, and visual design',      NULL),
+    ('ca000001-0000-0000-0000-000000000003', 'Data Science',  'Data analysis, ML, and statistics',      NULL),
+    ('ca000001-0000-0000-0000-000000000004', 'Business',      'Business, management, and finance',      NULL),
+    ('ca000001-0000-0000-0000-000000000005', 'Languages',     'Spoken and written human languages',     NULL),
+    ('ca000001-0000-0000-0000-000000000006', 'Mathematics',   'Pure and applied mathematics',           NULL),
+    ('ca000001-0000-0000-0000-000000000007', 'Other',         'Miscellaneous skills',                   NULL);
 
 -- ── Seed: Sub-Categories ─────────────────────────────────────
 INSERT INTO skill_categories (id, name, description, parent_id) VALUES
-    ('cat-0002-0000-0000-0000-000000000001', 'Java',           'Java programming language',               'cat-0001-0000-0000-0000-000000000001'),
-    ('cat-0002-0000-0000-0000-000000000002', 'Python',         'Python programming language',             'cat-0001-0000-0000-0000-000000000001'),
-    ('cat-0002-0000-0000-0000-000000000003', 'JavaScript',     'JavaScript and TypeScript',               'cat-0001-0000-0000-0000-000000000001'),
-    ('cat-0002-0000-0000-0000-000000000004', 'System Design',  'Distributed systems and architecture',    'cat-0001-0000-0000-0000-000000000001'),
-    ('cat-0002-0000-0000-0000-000000000005', 'Databases',      'SQL, NoSQL and database design',          'cat-0001-0000-0000-0000-000000000001'),
-    ('cat-0002-0000-0000-0000-000000000006', 'DevOps',         'CI/CD, Docker, Kubernetes',               'cat-0001-0000-0000-0000-000000000001'),
-    ('cat-0002-0000-0000-0000-000000000007', 'UI/UX Design',   'User interface and experience design',    'cat-0001-0000-0000-0000-000000000002'),
-    ('cat-0002-0000-0000-0000-000000000008', 'Machine Learning','ML algorithms and frameworks',           'cat-0001-0000-0000-0000-000000000003'),
-    ('cat-0002-0000-0000-0000-000000000009', 'Data Analysis',  'Excel, Power BI, Tableau',                'cat-0001-0000-0000-0000-000000000003');
+    ('ca000002-0000-0000-0000-000000000001', 'Java',           'Java programming language',               'ca000001-0000-0000-0000-000000000001'),
+    ('ca000002-0000-0000-0000-000000000002', 'Python',         'Python programming language',             'ca000001-0000-0000-0000-000000000001'),
+    ('ca000002-0000-0000-0000-000000000003', 'JavaScript',     'JavaScript and TypeScript',               'ca000001-0000-0000-0000-000000000001'),
+    ('ca000002-0000-0000-0000-000000000004', 'System Design',  'Distributed systems and architecture',    'ca000001-0000-0000-0000-000000000001'),
+    ('ca000002-0000-0000-0000-000000000005', 'Databases',      'SQL, NoSQL and database design',          'ca000001-0000-0000-0000-000000000001'),
+    ('ca000002-0000-0000-0000-000000000006', 'DevOps',         'CI/CD, Docker, Kubernetes',               'ca000001-0000-0000-0000-000000000001'),
+    ('ca000002-0000-0000-0000-000000000007', 'UI/UX Design',   'User interface and experience design',    'ca000001-0000-0000-0000-000000000002'),
+    ('ca000002-0000-0000-0000-000000000008', 'Machine Learning','ML algorithms and frameworks',           'ca000001-0000-0000-0000-000000000003'),
+    ('ca000002-0000-0000-0000-000000000009', 'Data Analysis',  'Excel, Power BI, Tableau',                'ca000001-0000-0000-0000-000000000003');
 
 -- ── Seed: Skills ─────────────────────────────────────────────
 INSERT INTO skills (id, name, description, category_id, is_global, tags) VALUES
     -- Java
-    ('ski-0001-0000-0000-0000-000000000001', 'Java OOP',          'Object-Oriented Programming in Java',         'cat-0002-0000-0000-0000-000000000001', 1, '["java","oop","basics"]'),
-    ('ski-0001-0000-0000-0000-000000000002', 'Java Collections',  'Java Collections Framework',                  'cat-0002-0000-0000-0000-000000000001', 1, '["java","collections","data-structures"]'),
-    ('ski-0001-0000-0000-0000-000000000003', 'Java Multithreading','Concurrency and multithreading in Java',      'cat-0002-0000-0000-0000-000000000001', 1, '["java","threads","concurrency"]'),
-    ('ski-0001-0000-0000-0000-000000000004', 'Spring Boot',       'Spring Boot REST API development',            'cat-0002-0000-0000-0000-000000000001', 1, '["java","spring","backend"]'),
-    ('ski-0001-0000-0000-0000-000000000005', 'Spring Security',   'Authentication and authorization with Spring','cat-0002-0000-0000-0000-000000000001', 1, '["java","spring","security"]'),
+    ('ab000001-0000-0000-0000-000000000001', 'Java OOP',          'Object-Oriented Programming in Java',         'ca000002-0000-0000-0000-000000000001', 1, '["java","oop","basics"]'),
+    ('ab000001-0000-0000-0000-000000000002', 'Java Collections',  'Java Collections Framework',                  'ca000002-0000-0000-0000-000000000001', 1, '["java","collections","data-structures"]'),
+    ('ab000001-0000-0000-0000-000000000003', 'Java Multithreading','Concurrency and multithreading in Java',      'ca000002-0000-0000-0000-000000000001', 1, '["java","threads","concurrency"]'),
+    ('ab000001-0000-0000-0000-000000000004', 'Spring Boot',       'Spring Boot REST API development',            'ca000002-0000-0000-0000-000000000001', 1, '["java","spring","backend"]'),
+    ('ab000001-0000-0000-0000-000000000005', 'Spring Security',   'Authentication and authorization with Spring','ca000002-0000-0000-0000-000000000001', 1, '["java","spring","security"]'),
     -- Python
-    ('ski-0001-0000-0000-0000-000000000006', 'Python Basics',     'Python fundamentals and syntax',              'cat-0002-0000-0000-0000-000000000002', 1, '["python","basics"]'),
-    ('ski-0001-0000-0000-0000-000000000007', 'Django',            'Web development with Django',                 'cat-0002-0000-0000-0000-000000000002', 1, '["python","web","backend"]'),
-    ('ski-0001-0000-0000-0000-000000000008', 'FastAPI',           'Building APIs with FastAPI',                  'cat-0002-0000-0000-0000-000000000002', 1, '["python","api","backend"]'),
+    ('ab000001-0000-0000-0000-000000000006', 'Python Basics',     'Python fundamentals and syntax',              'ca000002-0000-0000-0000-000000000002', 1, '["python","basics"]'),
+    ('ab000001-0000-0000-0000-000000000007', 'Django',            'Web development with Django',                 'ca000002-0000-0000-0000-000000000002', 1, '["python","web","backend"]'),
+    ('ab000001-0000-0000-0000-000000000008', 'FastAPI',           'Building APIs with FastAPI',                  'ca000002-0000-0000-0000-000000000002', 1, '["python","api","backend"]'),
     -- JavaScript
-    ('ski-0001-0000-0000-0000-000000000009', 'JavaScript Basics', 'JavaScript fundamentals and ES6+',           'cat-0002-0000-0000-0000-000000000003', 1, '["javascript","basics","frontend"]'),
-    ('ski-0001-0000-0000-0000-000000000010', 'React',             'React component and state management',        'cat-0002-0000-0000-0000-000000000003', 1, '["javascript","react","frontend"]'),
-    ('ski-0001-0000-0000-0000-000000000011', 'TypeScript',        'TypeScript for type-safe JavaScript',         'cat-0002-0000-0000-0000-000000000003', 1, '["javascript","typescript","frontend"]'),
-    ('ski-0001-0000-0000-0000-000000000012', 'Node.js',           'Server-side JavaScript with Node.js',         'cat-0002-0000-0000-0000-000000000003', 1, '["javascript","nodejs","backend"]'),
+    ('ab000001-0000-0000-0000-000000000009', 'JavaScript Basics', 'JavaScript fundamentals and ES6+',           'ca000002-0000-0000-0000-000000000003', 1, '["javascript","basics","frontend"]'),
+    ('ab000001-0000-0000-0000-000000000010', 'React',             'React component and state management',        'ca000002-0000-0000-0000-000000000003', 1, '["javascript","react","frontend"]'),
+    ('ab000001-0000-0000-0000-000000000011', 'TypeScript',        'TypeScript for type-safe JavaScript',         'ca000002-0000-0000-0000-000000000003', 1, '["javascript","typescript","frontend"]'),
+    ('ab000001-0000-0000-0000-000000000012', 'Node.js',           'Server-side JavaScript with Node.js',         'ca000002-0000-0000-0000-000000000003', 1, '["javascript","nodejs","backend"]'),
     -- System Design
-    ('ski-0001-0000-0000-0000-000000000013', 'System Design Basics','Introduction to distributed systems',       'cat-0002-0000-0000-0000-000000000004', 1, '["architecture","design","backend"]'),
-    ('ski-0001-0000-0000-0000-000000000014', 'Microservices',     'Microservices architecture patterns',         'cat-0002-0000-0000-0000-000000000004', 1, '["microservices","architecture"]'),
+    ('ab000001-0000-0000-0000-000000000013', 'System Design Basics','Introduction to distributed systems',       'ca000002-0000-0000-0000-000000000004', 1, '["architecture","design","backend"]'),
+    ('ab000001-0000-0000-0000-000000000014', 'Microservices',     'Microservices architecture patterns',         'ca000002-0000-0000-0000-000000000004', 1, '["microservices","architecture"]'),
     -- Databases
-    ('ski-0001-0000-0000-0000-000000000015', 'SQL',               'Structured Query Language fundamentals',      'cat-0002-0000-0000-0000-000000000005', 1, '["sql","databases","basics"]'),
-    ('ski-0001-0000-0000-0000-000000000016', 'MySQL',             'MySQL database administration and queries',   'cat-0002-0000-0000-0000-000000000005', 1, '["sql","mysql","databases"]'),
-    ('ski-0001-0000-0000-0000-000000000017', 'MongoDB',           'NoSQL document database with MongoDB',        'cat-0002-0000-0000-0000-000000000005', 1, '["nosql","mongodb","databases"]'),
+    ('ab000001-0000-0000-0000-000000000015', 'SQL',               'Structured Query Language fundamentals',      'ca000002-0000-0000-0000-000000000005', 1, '["sql","databases","basics"]'),
+    ('ab000001-0000-0000-0000-000000000016', 'MySQL',             'MySQL database administration and queries',   'ca000002-0000-0000-0000-000000000005', 1, '["sql","mysql","databases"]'),
+    ('ab000001-0000-0000-0000-000000000017', 'MongoDB',           'NoSQL document database with MongoDB',        'ca000002-0000-0000-0000-000000000005', 1, '["nosql","mongodb","databases"]'),
     -- DevOps
-    ('ski-0001-0000-0000-0000-000000000018', 'Docker',            'Containerization with Docker',                'cat-0002-0000-0000-0000-000000000006', 1, '["docker","devops","containers"]'),
-    ('ski-0001-0000-0000-0000-000000000019', 'Git',               'Version control with Git',                    'cat-0002-0000-0000-0000-000000000006', 1, '["git","devops","basics"]'),
+    ('ab000001-0000-0000-0000-000000000018', 'Docker',            'Containerization with Docker',                'ca000002-0000-0000-0000-000000000006', 1, '["docker","devops","containers"]'),
+    ('ab000001-0000-0000-0000-000000000019', 'Git',               'Version control with Git',                    'ca000002-0000-0000-0000-000000000006', 1, '["git","devops","basics"]'),
     -- UI/UX
-    ('ski-0001-0000-0000-0000-000000000020', 'Figma',             'UI design and prototyping with Figma',        'cat-0002-0000-0000-0000-000000000007', 1, '["figma","design","ui"]'),
-    ('ski-0001-0000-0000-0000-000000000021', 'UX Research',       'User research and usability testing',         'cat-0002-0000-0000-0000-000000000007', 1, '["ux","research","design"]'),
+    ('ab000001-0000-0000-0000-000000000020', 'Figma',             'UI design and prototyping with Figma',        'ca000002-0000-0000-0000-000000000007', 1, '["figma","design","ui"]'),
+    ('ab000001-0000-0000-0000-000000000021', 'UX Research',       'User research and usability testing',         'ca000002-0000-0000-0000-000000000007', 1, '["ux","research","design"]'),
     -- Machine Learning
-    ('ski-0001-0000-0000-0000-000000000022', 'Machine Learning',  'ML algorithms and model training',            'cat-0002-0000-0000-0000-000000000008', 1, '["ml","ai","python"]'),
-    ('ski-0001-0000-0000-0000-000000000023', 'Deep Learning',     'Neural networks and deep learning',           'cat-0002-0000-0000-0000-000000000008', 1, '["dl","ai","python"]'),
+    ('ab000001-0000-0000-0000-000000000022', 'Machine Learning',  'ML algorithms and model training',            'ca000002-0000-0000-0000-000000000008', 1, '["ml","ai","python"]'),
+    ('ab000001-0000-0000-0000-000000000023', 'Deep Learning',     'Neural networks and deep learning',           'ca000002-0000-0000-0000-000000000008', 1, '["dl","ai","python"]'),
     -- Data Analysis
-    ('ski-0001-0000-0000-0000-000000000024', 'Excel',             'Microsoft Excel for data analysis',           'cat-0002-0000-0000-0000-000000000009', 1, '["excel","data","analysis"]'),
-    ('ski-0001-0000-0000-0000-000000000025', 'Power BI',          'Business intelligence with Power BI',         'cat-0002-0000-0000-0000-000000000009', 1, '["powerbi","data","analysis"]');
+    ('ab000001-0000-0000-0000-000000000024', 'Excel',             'Microsoft Excel for data analysis',           'ca000002-0000-0000-0000-000000000009', 1, '["excel","data","analysis"]'),
+    ('ab000001-0000-0000-0000-000000000025', 'Power BI',          'Business intelligence with Power BI',         'ca000002-0000-0000-0000-000000000009', 1, '["powerbi","data","analysis"]');
 
 -- ── Seed: Prerequisites ───────────────────────────────────────
 INSERT INTO skill_prerequisites (skill_id, prerequisite_skill_id) VALUES
     -- Java Collections requires Java OOP
-    ('ski-0001-0000-0000-0000-000000000002', 'ski-0001-0000-0000-0000-000000000001'),
+    ('ab000001-0000-0000-0000-000000000002', 'ab000001-0000-0000-0000-000000000001'),
     -- Java Multithreading requires Java Collections
-    ('ski-0001-0000-0000-0000-000000000003', 'ski-0001-0000-0000-0000-000000000002'),
+    ('ab000001-0000-0000-0000-000000000003', 'ab000001-0000-0000-0000-000000000002'),
     -- Spring Boot requires Java OOP
-    ('ski-0001-0000-0000-0000-000000000004', 'ski-0001-0000-0000-0000-000000000001'),
+    ('ab000001-0000-0000-0000-000000000004', 'ab000001-0000-0000-0000-000000000001'),
     -- Spring Security requires Spring Boot
-    ('ski-0001-0000-0000-0000-000000000005', 'ski-0001-0000-0000-0000-000000000004'),
+    ('ab000001-0000-0000-0000-000000000005', 'ab000001-0000-0000-0000-000000000004'),
     -- React requires JavaScript Basics
-    ('ski-0001-0000-0000-0000-000000000010', 'ski-0001-0000-0000-0000-000000000009'),
+    ('ab000001-0000-0000-0000-000000000010', 'ab000001-0000-0000-0000-000000000009'),
     -- TypeScript requires JavaScript Basics
-    ('ski-0001-0000-0000-0000-000000000011', 'ski-0001-0000-0000-0000-000000000009'),
+    ('ab000001-0000-0000-0000-000000000011', 'ab000001-0000-0000-0000-000000000009'),
     -- Microservices requires System Design Basics
-    ('ski-0001-0000-0000-0000-000000000014', 'ski-0001-0000-0000-0000-000000000013'),
+    ('ab000001-0000-0000-0000-000000000014', 'ab000001-0000-0000-0000-000000000013'),
     -- MySQL requires SQL
-    ('ski-0001-0000-0000-0000-000000000016', 'ski-0001-0000-0000-0000-000000000015'),
+    ('ab000001-0000-0000-0000-000000000016', 'ab000001-0000-0000-0000-000000000015'),
     -- Deep Learning requires Machine Learning
-    ('ski-0001-0000-0000-0000-000000000023', 'ski-0001-0000-0000-0000-000000000022');
+    ('ab000001-0000-0000-0000-000000000023', 'ab000001-0000-0000-0000-000000000022');
